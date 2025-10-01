@@ -51,6 +51,11 @@
                 flex: 1;
             }
 
+            .right-panel {
+                flex: 1;
+                overflow-x: auto;
+            }
+
             .analysis-panel {
                 flex: 1;
                 background-color: #252526;
@@ -273,13 +278,11 @@
             }
 
             .code-panel {
-                flex: 1;
                 background-color: #252526;
                 border: 1px solid #3e3e42;
                 border-radius: 8px;
                 display: flex;
                 flex-direction: column;
-                overflow-x: auto;
             }
 
             .analysis-panel-header,
@@ -550,15 +553,19 @@
                     </div>
                 </div>
 
-                <div class="code-panel" id="codePanel">
-                    <div class="code-panel-header">
-                        <h3 class="code-panel-title" id="codePanelTitle">Source Code</h3>
-                    </div>
-                    <div class="code-panel-content" id="codePanelContent">
-                        <div class="placeholder-content" id="codePlaceholderContent">
-                            <div class="placeholder-icon">💻</div>
-                            <div class="placeholder-text">Click on a file to see the code</div>
-                            <div class="placeholder-subtext">Select any file from the tree to view its source code</div>
+                <div class="right-panel">
+                    <div class="code-panel" id="codePanel">
+                        <div class="code-panel-header">
+                            <h3 class="code-panel-title" id="codePanelTitle">Source Code</h3>
+                        </div>
+                        <div class="code-panel-content" id="codePanelContent">
+                            <div class="placeholder-content" id="codePlaceholderContent">
+                                <div class="placeholder-icon">💻</div>
+                                <div class="placeholder-text">Click on a file to see the code</div>
+                                <div class="placeholder-subtext">
+                                    Select any file from the tree to view its source code
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
