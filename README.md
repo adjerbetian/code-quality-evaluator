@@ -26,3 +26,11 @@ The visualization uses a 6-level quality scale:
 - **🟡 Fair** (2.0): Some principles applied, major gaps remain
 - **🟠 Poor** (1.0): Significant rework needed
 - **🔴 Critical** (0.0): Major issues requiring immediate attention
+
+## TODO
+
+- visualize the code in the UI
+- weight the files by their number of lines
+- make the evaluation process interruptable and resumable
+    - store the report after each file evaluation
+    - resume the evaluation if the report analysis already exists
