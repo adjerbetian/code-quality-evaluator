@@ -98,5 +98,7 @@ function generateVisualization(report: Analysis): string {
     const reportWithMetrics = getMetrics(report);
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const htmlTemplate = readFileSync(path.join(__dirname, 'visualize-code-quality-template.html'), 'utf-8');
-    return htmlTemplate.replace('$REPORT', JSON.stringify(reportWithMetrics));
+    let stringReport = JSON.stringify(reportWithMetrics, null, 2);
+    stringReport = stringReport.replaceAll("$'", "$ '"); // We need to escape the Template Literal Interpretation
+    return htmlTemplate.replace('$REPORT', stringReport);
 }
