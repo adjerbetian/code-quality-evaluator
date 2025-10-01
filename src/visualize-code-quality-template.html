@@ -51,7 +51,7 @@
                 flex: 1;
             }
 
-            .right-panel {
+            .analysis-panel {
                 flex: 1;
                 background-color: #252526;
                 border: 1px solid #3e3e42;
@@ -282,7 +282,7 @@
                 overflow-x: auto;
             }
 
-            .right-panel-header,
+            .analysis-panel-header,
             .code-panel-header {
                 background-color: #2d2d30;
                 padding: 15px 20px;
@@ -292,7 +292,7 @@
                 align-items: center;
             }
 
-            .right-panel-title,
+            .analysis-panel-title,
             .code-panel-title {
                 color: #ffffff;
                 font-size: 16px;
@@ -320,7 +320,7 @@
                 border-radius: 3px;
             }
 
-            .right-panel-content {
+            .analysis-panel-content {
                 flex: 1;
                 padding: 20px;
                 font-size: 14px;
@@ -351,41 +351,41 @@
                 font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             }
 
-            .right-panel-content h1,
-            .right-panel-content h2,
-            .right-panel-content h3,
-            .right-panel-content h4,
-            .right-panel-content h5,
-            .right-panel-content h6 {
+            .analysis-panel-content h1,
+            .analysis-panel-content h2,
+            .analysis-panel-content h3,
+            .analysis-panel-content h4,
+            .analysis-panel-content h5,
+            .analysis-panel-content h6 {
                 color: #ffffff;
                 margin-top: 20px;
                 margin-bottom: 10px;
             }
 
-            .right-panel-content h1:first-child,
-            .right-panel-content h2:first-child,
-            .right-panel-content h3:first-child,
-            .right-panel-content h4:first-child,
-            .right-panel-content h5:first-child,
-            .right-panel-content h6:first-child {
+            .analysis-panel-content h1:first-child,
+            .analysis-panel-content h2:first-child,
+            .analysis-panel-content h3:first-child,
+            .analysis-panel-content h4:first-child,
+            .analysis-panel-content h5:first-child,
+            .analysis-panel-content h6:first-child {
                 margin-top: 0;
             }
 
-            .right-panel-content p {
+            .analysis-panel-content p {
                 margin-bottom: 15px;
             }
 
-            .right-panel-content ul,
-            .right-panel-content ol {
+            .analysis-panel-content ul,
+            .analysis-panel-content ol {
                 margin-bottom: 15px;
                 padding-left: 20px;
             }
 
-            .right-panel-content li {
+            .analysis-panel-content li {
                 margin-bottom: 5px;
             }
 
-            .right-panel-content code {
+            .analysis-panel-content code {
                 background-color: #1e1e1e;
                 color: #d4d4d4;
                 padding: 2px 6px;
@@ -394,7 +394,7 @@
                 font-size: 13px;
             }
 
-            .right-panel-content pre {
+            .analysis-panel-content pre {
                 background-color: #1e1e1e;
                 color: #d4d4d4;
                 padding: 15px;
@@ -402,38 +402,38 @@
                 margin-bottom: 15px;
             }
 
-            .right-panel-content pre code {
+            .analysis-panel-content pre code {
                 background: none;
                 padding: 0;
             }
 
-            .right-panel-content blockquote {
+            .analysis-panel-content blockquote {
                 border-left: 4px solid #0e639c;
                 margin: 15px 0;
                 padding-left: 15px;
                 color: #cccccc;
             }
 
-            .right-panel-content table {
+            .analysis-panel-content table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 15px;
             }
 
-            .right-panel-content th,
-            .right-panel-content td {
+            .analysis-panel-content th,
+            .analysis-panel-content td {
                 border: 1px solid #3e3e42;
                 padding: 8px 12px;
                 text-align: left;
             }
 
-            .right-panel-content th {
+            .analysis-panel-content th {
                 background-color: #2d2d30;
                 color: #ffffff;
                 font-weight: bold;
             }
 
-            .right-panel-content tr:nth-child(even) {
+            .analysis-panel-content tr:nth-child(even) {
                 background-color: #2a2d2e;
             }
 
@@ -534,11 +534,11 @@
                 </div>
 
                 <div class="middle-panel">
-                    <div class="right-panel" id="rightPanel">
-                        <div class="right-panel-header">
-                            <h3 class="right-panel-title" id="rightPanelTitle">File Analysis</h3>
+                    <div class="analysis-panel" id="analysisPanel">
+                        <div class="analysis-panel-header">
+                            <h3 class="analysis-panel-title" id="analysisPanelTitle">File Analysis</h3>
                         </div>
-                        <div class="right-panel-content" id="rightPanelContent">
+                        <div class="analysis-panel-content" id="analysisPanelContent">
                             <div class="placeholder-content" id="placeholderContent">
                                 <div class="placeholder-icon">📄</div>
                                 <div class="placeholder-text">Click on a file to see the analysis</div>
@@ -707,8 +707,8 @@
             function showFileAnalysis(event, analysis) {
                 console.log({ analysis });
                 event.stopPropagation();
-                const rightPanelTitle = document.getElementById('rightPanelTitle');
-                const rightPanelContent = document.getElementById('rightPanelContent');
+                const analysisPanelTitle = document.getElementById('analysisPanelTitle');
+                const analysisPanelContent = document.getElementById('analysisPanelContent');
                 const placeholderContent = document.getElementById('placeholderContent');
                 const codePanelTitle = document.getElementById('codePanelTitle');
                 const codePanelContent = document.getElementById('codePanelContent');
@@ -721,8 +721,8 @@
                 const htmlContent = converter.makeHtml(analysis.analysis);
 
                 // Update analysis panel content
-                rightPanelTitle.textContent = analysis.name;
-                rightPanelContent.innerHTML = htmlContent;
+                analysisPanelTitle.textContent = analysis.name;
+                analysisPanelContent.innerHTML = htmlContent;
                 placeholderContent.style.display = 'none';
 
                 // Update code panel content
@@ -748,16 +748,16 @@
                 }
             }
 
-            function resetRightPanel() {
-                const rightPanelTitle = document.getElementById('rightPanelTitle');
-                const rightPanelContent = document.getElementById('rightPanelContent');
+            function resetAnalysisPanel() {
+                const analysisPanelTitle = document.getElementById('analysisPanelTitle');
+                const analysisPanelContent = document.getElementById('analysisPanelContent');
                 const placeholderContent = document.getElementById('placeholderContent');
                 const codePanelTitle = document.getElementById('codePanelTitle');
                 const codePanelContent = document.getElementById('codePanelContent');
 
                 // Reset analysis panel to placeholder state
-                rightPanelTitle.textContent = 'File Analysis';
-                rightPanelContent.innerHTML = `
+                analysisPanelTitle.textContent = 'File Analysis';
+                analysisPanelContent.innerHTML = `
                     <div class="placeholder-content" id="placeholderContent">
                         <div class="placeholder-icon">📄</div>
                         <div class="placeholder-text">Click on a file to see the analysis</div>
