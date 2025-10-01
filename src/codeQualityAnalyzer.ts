@@ -134,10 +134,8 @@ export class CodeQualityAnalyzer {
     }
 
     private buildCursorCommand(prompt: string): string {
-        return `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent -p --output-format text "${prompt.replace(
-            /"/g,
-            '\\"'
-        )}"`;
+        prompt = prompt.replace(/\"/g, '\\"');
+        return `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent -p --output-format text "${prompt}"`;
     }
 
     private createFileAnalysisResult(filePath: string, fileName: string, analysis: string): FileAnalysis {
