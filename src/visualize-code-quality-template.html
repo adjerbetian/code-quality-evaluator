@@ -5,6 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Code Quality Visualization</title>
         <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/vs2015.min.css"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/typescript.min.js"></script>
         <style>
             * {
                 margin: 0;
@@ -20,8 +26,6 @@
                 line-height: 1.4;
                 display: flex;
                 gap: 20px;
-                height: 100vh;
-                overflow: hidden;
             }
 
             .main-content {
@@ -29,6 +33,31 @@
                 display: flex;
                 flex-direction: column;
                 min-width: 0;
+            }
+
+            .panels-container {
+                display: flex;
+                gap: 20px;
+                flex: 1;
+                min-height: 0;
+            }
+
+            .left-panel {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .middle-panel {
+                flex: 1;
+            }
+
+            .right-panel {
+                flex: 1;
+                background-color: #252526;
+                border: 1px solid #3e3e42;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
             }
 
             .header {
@@ -55,7 +84,6 @@
                 border-radius: 8px;
                 padding: 20px;
                 max-height: 80vh;
-                overflow-y: auto;
             }
 
             .tree {
@@ -244,17 +272,18 @@
                 background-color: #1177bb;
             }
 
-            .right-panel {
+            .code-panel {
                 flex: 1;
                 background-color: #252526;
                 border: 1px solid #3e3e42;
                 border-radius: 8px;
                 display: flex;
                 flex-direction: column;
-                overflow: hidden;
+                overflow-x: auto;
             }
 
-            .right-panel-header {
+            .right-panel-header,
+            .code-panel-header {
                 background-color: #2d2d30;
                 padding: 15px 20px;
                 border-bottom: 1px solid #3e3e42;
@@ -263,7 +292,8 @@
                 align-items: center;
             }
 
-            .right-panel-title {
+            .right-panel-title,
+            .code-panel-title {
                 color: #ffffff;
                 font-size: 16px;
                 font-weight: bold;
@@ -293,9 +323,32 @@
             .right-panel-content {
                 flex: 1;
                 padding: 20px;
-                overflow-y: auto;
                 font-size: 14px;
                 line-height: 1.6;
+            }
+
+            .code-panel-content {
+                flex: 1;
+                padding: 0;
+                font-size: 13px;
+                line-height: 1.4;
+                background-color: #1e1e1e;
+            }
+
+            .code-panel-content pre {
+                margin: 0;
+                padding: 20px;
+                background: none;
+                border: none;
+                overflow-x: auto;
+                border-radius: 0;
+            }
+
+            .code-panel-content code {
+                background: none;
+                padding: 0;
+                color: inherit;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             }
 
             .right-panel-content h1,
@@ -346,7 +399,6 @@
                 color: #d4d4d4;
                 padding: 15px;
                 border-radius: 5px;
-                overflow-x: auto;
                 margin-bottom: 15px;
             }
 
@@ -473,22 +525,41 @@
                 </table>
             </div>
 
-            <div class="tree-container">
-                <button class="expand-all-btn" onclick="toggleAllFolders()">Expand All Folders</button>
-                <div class="tree"></div>
-            </div>
-        </div>
+            <div class="panels-container">
+                <div class="left-panel">
+                    <div class="tree-container">
+                        <button class="expand-all-btn" onclick="toggleAllFolders()">Expand All Folders</button>
+                        <div class="tree"></div>
+                    </div>
+                </div>
 
-        <div class="right-panel" id="rightPanel">
-            <div class="right-panel-header">
-                <h3 class="right-panel-title" id="rightPanelTitle">File Analysis</h3>
-            </div>
-            <div class="right-panel-content" id="rightPanelContent">
-                <div class="placeholder-content" id="placeholderContent">
-                    <div class="placeholder-icon">📄</div>
-                    <div class="placeholder-text">Click on a file to see the analysis</div>
-                    <div class="placeholder-subtext">
-                        Select any file from the tree to view its detailed code quality analysis
+                <div class="middle-panel">
+                    <div class="right-panel" id="rightPanel">
+                        <div class="right-panel-header">
+                            <h3 class="right-panel-title" id="rightPanelTitle">File Analysis</h3>
+                        </div>
+                        <div class="right-panel-content" id="rightPanelContent">
+                            <div class="placeholder-content" id="placeholderContent">
+                                <div class="placeholder-icon">📄</div>
+                                <div class="placeholder-text">Click on a file to see the analysis</div>
+                                <div class="placeholder-subtext">
+                                    Select any file from the tree to view its detailed code quality analysis
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-panel" id="codePanel">
+                    <div class="code-panel-header">
+                        <h3 class="code-panel-title" id="codePanelTitle">Source Code</h3>
+                    </div>
+                    <div class="code-panel-content" id="codePanelContent">
+                        <div class="placeholder-content" id="codePlaceholderContent">
+                            <div class="placeholder-icon">💻</div>
+                            <div class="placeholder-text">Click on a file to see the code</div>
+                            <div class="placeholder-subtext">Select any file from the tree to view its source code</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -574,7 +645,7 @@
 
                 // Use closure to bind the analysis data to the click handler
                 fileDiv.addEventListener('click', (event) => {
-                    showFileAnalysis(event, analysis.name, analysis.analysis);
+                    showFileAnalysis(event, analysis);
                 });
 
                 return fileDiv;
@@ -633,38 +704,74 @@
                 });
             }
 
-            function showFileAnalysis(event, fileName, analysisText) {
+            function showFileAnalysis(event, analysis) {
+                console.log({ analysis });
                 event.stopPropagation();
                 const rightPanelTitle = document.getElementById('rightPanelTitle');
                 const rightPanelContent = document.getElementById('rightPanelContent');
                 const placeholderContent = document.getElementById('placeholderContent');
+                const codePanelTitle = document.getElementById('codePanelTitle');
+                const codePanelContent = document.getElementById('codePanelContent');
+                const codePlaceholderContent = document.getElementById('codePlaceholderContent');
 
                 // Initialize Showdown converter
                 const converter = new showdown.Converter();
 
                 // Convert markdown to HTML
-                const htmlContent = converter.makeHtml(analysisText);
+                const htmlContent = converter.makeHtml(analysis.analysis);
 
-                // Update panel content
-                rightPanelTitle.textContent = fileName;
+                // Update analysis panel content
+                rightPanelTitle.textContent = analysis.name;
                 rightPanelContent.innerHTML = htmlContent;
-
-                // Hide placeholder and show file content
                 placeholderContent.style.display = 'none';
+
+                // Update code panel content
+                codePanelTitle.textContent = analysis.name;
+                if (analysis.code) {
+                    // Determine file extension for syntax highlighting
+                    const fileExtension = getFileExtension(analysis.name);
+                    const language = getLanguageFromExtension(fileExtension);
+
+                    // Create highlighted code
+                    const highlightedCode = hljs.highlight(analysis.code, { language: language }).value;
+
+                    codePanelContent.innerHTML = `<pre><code class="language-${language}">${highlightedCode}</code></pre>`;
+                    codePlaceholderContent.style.display = 'none';
+                } else {
+                    codePanelContent.innerHTML = `
+                        <div class="placeholder-content" id="codePlaceholderContent">
+                            <div class="placeholder-icon">💻</div>
+                            <div class="placeholder-text">No code available</div>
+                            <div class="placeholder-subtext">This file doesn't have source code content</div>
+                        </div>
+                    `;
+                }
             }
 
             function resetRightPanel() {
                 const rightPanelTitle = document.getElementById('rightPanelTitle');
                 const rightPanelContent = document.getElementById('rightPanelContent');
                 const placeholderContent = document.getElementById('placeholderContent');
+                const codePanelTitle = document.getElementById('codePanelTitle');
+                const codePanelContent = document.getElementById('codePanelContent');
 
-                // Reset to placeholder state
+                // Reset analysis panel to placeholder state
                 rightPanelTitle.textContent = 'File Analysis';
                 rightPanelContent.innerHTML = `
                     <div class="placeholder-content" id="placeholderContent">
                         <div class="placeholder-icon">📄</div>
                         <div class="placeholder-text">Click on a file to see the analysis</div>
                         <div class="placeholder-subtext">Select any file from the tree to view its detailed code quality analysis</div>
+                    </div>
+                `;
+
+                // Reset code panel to placeholder state
+                codePanelTitle.textContent = 'Source Code';
+                codePanelContent.innerHTML = `
+                    <div class="placeholder-content" id="codePlaceholderContent">
+                        <div class="placeholder-icon">💻</div>
+                        <div class="placeholder-text">Click on a file to see the code</div>
+                        <div class="placeholder-subtext">Select any file from the tree to view its source code</div>
                     </div>
                 `;
             }
@@ -680,6 +787,36 @@
                 if (score >= 1.5) return 'Fair';
                 if (score >= 0.5) return 'Poor';
                 return 'Critical';
+            }
+
+            function getFileExtension(fileName) {
+                const lastDot = fileName.lastIndexOf('.');
+                return lastDot !== -1 ? fileName.substring(lastDot + 1) : '';
+            }
+
+            function getLanguageFromExtension(extension) {
+                const languageMap = {
+                    js: 'javascript',
+                    ts: 'typescript',
+                    jsx: 'jsx',
+                    tsx: 'tsx',
+                    py: 'python',
+                    html: 'html',
+                    css: 'css',
+                    scss: 'scss',
+                    sass: 'sass',
+                    xml: 'xml',
+                    json: 'json',
+                    yaml: 'yaml',
+                    yml: 'yaml',
+                    md: 'markdown',
+                    sql: 'sql',
+                    sh: 'bash',
+                    bash: 'bash',
+                    txt: 'text',
+                    text: 'text',
+                };
+                return languageMap[extension.toLowerCase()] || 'text';
             }
         </script>
     </body>

@@ -29,7 +29,6 @@ The visualization uses a 6-level quality scale:
 
 ## TODO
 
-- visualize the code in the UI
 - weight the files by their number of lines
 - make the evaluation process interruptable and resumable
     - store the report after each file evaluation
