@@ -225,7 +225,6 @@
             }
 
             .quality-breakdown-table {
-                width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
             }
@@ -293,6 +292,12 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+            }
+
+            .analysis-panel-title-container {
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
 
             .analysis-panel-title,
@@ -418,7 +423,6 @@
             }
 
             .analysis-panel-content table {
-                width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 15px;
             }
@@ -472,9 +476,7 @@
     <body>
         <div class="main-content">
             <div class="header">
-                <h1>Code Quality Visualization</h1>
-
-                <h3>Quality breakdown</h3>
+                <h1>Code Quality</h1>
                 <table class="quality-breakdown-table">
                     <thead>
                         <tr>
@@ -539,7 +541,10 @@
                 <div class="middle-panel">
                     <div class="analysis-panel" id="analysisPanel">
                         <div class="analysis-panel-header">
-                            <h3 class="analysis-panel-title" id="analysisPanelTitle">File Analysis</h3>
+                            <div class="analysis-panel-title-container">
+                                <h3 class="analysis-panel-title" id="analysisPanelTitle">File Analysis</h3>
+                                <span class="quality-badge" id="analysisPanelBadge" style="display: none"></span>
+                            </div>
                         </div>
                         <div class="analysis-panel-content" id="analysisPanelContent">
                             <div class="placeholder-content" id="placeholderContent">
@@ -715,6 +720,7 @@
                 console.log({ analysis });
                 event.stopPropagation();
                 const analysisPanelTitle = document.getElementById('analysisPanelTitle');
+                const analysisPanelBadge = document.getElementById('analysisPanelBadge');
                 const analysisPanelContent = document.getElementById('analysisPanelContent');
                 const placeholderContent = document.getElementById('placeholderContent');
                 const codePanelTitle = document.getElementById('codePanelTitle');
@@ -729,6 +735,14 @@
 
                 // Update analysis panel content
                 analysisPanelTitle.textContent = analysis.name;
+
+                // Update quality badge
+                const qualityClass = getQualityClass(convertVerdictToScore(analysis.verdict));
+                const qualityBadge = getQualityBadge(convertVerdictToScore(analysis.verdict));
+                analysisPanelBadge.textContent = qualityBadge;
+                analysisPanelBadge.className = `quality-badge ${qualityClass}`;
+                analysisPanelBadge.style.display = 'inline-block';
+
                 analysisPanelContent.innerHTML = htmlContent;
                 placeholderContent.style.display = 'none';
 
@@ -757,6 +771,7 @@
 
             function resetAnalysisPanel() {
                 const analysisPanelTitle = document.getElementById('analysisPanelTitle');
+                const analysisPanelBadge = document.getElementById('analysisPanelBadge');
                 const analysisPanelContent = document.getElementById('analysisPanelContent');
                 const placeholderContent = document.getElementById('placeholderContent');
                 const codePanelTitle = document.getElementById('codePanelTitle');
@@ -764,6 +779,7 @@
 
                 // Reset analysis panel to placeholder state
                 analysisPanelTitle.textContent = 'File Analysis';
+                analysisPanelBadge.style.display = 'none';
                 analysisPanelContent.innerHTML = `
                     <div class="placeholder-content" id="placeholderContent">
                         <div class="placeholder-icon">📄</div>
