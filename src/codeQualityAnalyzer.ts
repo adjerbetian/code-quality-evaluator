@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { writeFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { readdir as readdirAsync, stat as statAsync } from 'fs/promises';
 import { join, relative } from 'path';
 
@@ -69,7 +69,7 @@ export class CodeQualityAnalyzer {
     private analyzeFile(filePath: string, fileName: string): FileAnalysis {
         try {
             const analysis = this.performFileAnalysis(filePath);
-            return this.createFileAnalysisResult(fileName, analysis);
+            return this.createFileAnalysisResult(filePath, fileName, analysis);
         } catch (error) {
             return this.createErrorAnalysis(fileName, error);
         }
@@ -136,17 +136,18 @@ export class CodeQualityAnalyzer {
     private buildCursorCommand(prompt: string): string {
         return `/Applications/Cursor.app/Contents/Resources/app/bin/cursor agent -p --output-format text "${prompt.replace(
             /"/g,
-            '\\"',
+            '\\"'
         )}"`;
     }
 
-    private createFileAnalysisResult(fileName: string, analysis: string): FileAnalysis {
+    private createFileAnalysisResult(filePath: string, fileName: string, analysis: string): FileAnalysis {
         const verdict = this.parseRawAnalysis(analysis);
         return {
             type: 'file',
             name: fileName,
             analysis: analysis.trim(),
             verdict,
+            code: readFileSync(filePath, 'utf-8'),
         };
     }
 
@@ -157,6 +158,7 @@ export class CodeQualityAnalyzer {
             name: fileName,
             analysis: `Error during analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
             verdict: 'Critical',
+            code: '',
         };
     }
 

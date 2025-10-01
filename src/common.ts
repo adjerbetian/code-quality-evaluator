@@ -16,6 +16,7 @@ export type FileAnalysis = {
     name: string;
     analysis: string;
     verdict: QualityVerdict;
+    code: string;
 };
 
 export type AnalysisWithMetrics = FolderAnalysisWithMetrics | FileAnalysisWithMetrics;
