@@ -7,7 +7,7 @@
  * npm run evaluate <folder-path> [output-file]
  */
 
-import { CodeQualityAnalyzer } from './codeQualityAnalyzer.ts';
+import { CodeQualityAnalyzer } from './code-quality-analyzer.ts';
 import { exportVisualization } from './common.ts';
 
 void main();
