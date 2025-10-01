@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Code Quality Visualization</title>
+        <script src="https://cdn.jsdelivr.net/npm/showdown@2.1.0/dist/showdown.min.js"></script>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+                padding: 20px;
+                line-height: 1.4;
+                display: flex;
+                gap: 20px;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .main-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .header {
+                background-color: #2d2d30;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                border: 1px solid #3e3e42;
+            }
+
+            .header h1 {
+                color: #ffffff;
+                margin-bottom: 10px;
+            }
+
+            .summary-value {
+                font-size: 14px;
+                font-weight: bold;
+            }
+
+            .tree-container {
+                background-color: #252526;
+                border: 1px solid #3e3e42;
+                border-radius: 8px;
+                padding: 20px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .tree {
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 14px;
+            }
+
+            .tree-item {
+                margin: 2px 0;
+                user-select: none;
+            }
+
+            .tree-item.folder {
+                cursor: pointer;
+                position: relative;
+            }
+
+            .tree-item.folder:hover {
+                background-color: #2a2d2e;
+                border-radius: 3px;
+            }
+
+            .tree-item.file {
+                padding: 2px 0;
+                cursor: pointer;
+            }
+
+            .tree-item.file:hover {
+                background-color: #2a2d2e;
+                border-radius: 3px;
+            }
+
+            .folder-icon {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+                vertical-align: middle;
+            }
+
+            .folder-icon::before {
+                content: '📁';
+                font-size: 14px;
+            }
+
+            .folder-icon.expanded::before {
+                content: '📂';
+            }
+
+            .file-icon {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+                vertical-align: middle;
+            }
+
+            .file-icon::before {
+                content: '📄';
+                font-size: 12px;
+            }
+
+            .item-name {
+                vertical-align: middle;
+                margin-right: 10px;
+            }
+
+            .quality-badge {
+                display: inline-block;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .quality-badge.excellent {
+                background-color: #28a745;
+                color: white;
+            }
+
+            .quality-badge.very-good {
+                background-color: #6c757d;
+                color: white;
+            }
+
+            .quality-badge.good {
+                background-color: #17a2b8;
+                color: white;
+            }
+
+            .quality-badge.fair {
+                background-color: #ffc107;
+                color: #212529;
+            }
+
+            .quality-badge.poor {
+                background-color: #fd7e14;
+                color: white;
+            }
+
+            .quality-badge.critical {
+                background-color: #dc3545;
+                color: white;
+            }
+
+            .folder-stats {
+                font-size: 11px;
+                color: #888;
+                margin-left: 10px;
+            }
+
+            .children {
+                margin-left: 20px;
+                display: none;
+            }
+
+            .children.expanded {
+                display: block;
+            }
+
+            .quality-breakdown {
+                background-color: #2d2d30;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                border: 1px solid #3e3e42;
+            }
+
+            .quality-breakdown h3 {
+                color: #ffffff;
+                margin-bottom: 10px;
+            }
+
+            .quality-breakdown-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+
+            .quality-breakdown-table th,
+            .quality-breakdown-table td {
+                border: 1px solid #3e3e42;
+                padding: 6px 8px;
+                text-align: left;
+                font-size: 13px;
+            }
+
+            .quality-breakdown-table th {
+                background-color: #252526;
+                color: #ffffff;
+                font-weight: bold;
+            }
+
+            .quality-breakdown-table .quality-badge {
+                margin-right: 8px;
+            }
+
+            .quality-breakdown-table .summary-value {
+                font-size: 13px;
+                font-weight: bold;
+            }
+
+            .quality-breakdown-table .summary-row {
+                background-color: #1e1e1e;
+            }
+
+            .quality-breakdown-table .summary-row td {
+                font-weight: bold;
+                color: #ffffff;
+            }
+
+            .expand-all-btn {
+                background-color: #0e639c;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                margin-bottom: 15px;
+            }
+
+            .expand-all-btn:hover {
+                background-color: #1177bb;
+            }
+
+            .right-panel {
+                flex: 1;
+                background-color: #252526;
+                border: 1px solid #3e3e42;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .right-panel-header {
+                background-color: #2d2d30;
+                padding: 15px 20px;
+                border-bottom: 1px solid #3e3e42;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .right-panel-title {
+                color: #ffffff;
+                font-size: 16px;
+                font-weight: bold;
+                margin: 0;
+            }
+
+            .close-panel-btn {
+                background: none;
+                border: none;
+                color: #cccccc;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .close-panel-btn:hover {
+                color: #ffffff;
+                background-color: #3e3e42;
+                border-radius: 3px;
+            }
+
+            .right-panel-content {
+                flex: 1;
+                padding: 20px;
+                overflow-y: auto;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .right-panel-content h1,
+            .right-panel-content h2,
+            .right-panel-content h3,
+            .right-panel-content h4,
+            .right-panel-content h5,
+            .right-panel-content h6 {
+                color: #ffffff;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+
+            .right-panel-content h1:first-child,
+            .right-panel-content h2:first-child,
+            .right-panel-content h3:first-child,
+            .right-panel-content h4:first-child,
+            .right-panel-content h5:first-child,
+            .right-panel-content h6:first-child {
+                margin-top: 0;
+            }
+
+            .right-panel-content p {
+                margin-bottom: 15px;
+            }
+
+            .right-panel-content ul,
+            .right-panel-content ol {
+                margin-bottom: 15px;
+                padding-left: 20px;
+            }
+
+            .right-panel-content li {
+                margin-bottom: 5px;
+            }
+
+            .right-panel-content code {
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 13px;
+            }
+
+            .right-panel-content pre {
+                background-color: #1e1e1e;
+                color: #d4d4d4;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin-bottom: 15px;
+            }
+
+            .right-panel-content pre code {
+                background: none;
+                padding: 0;
+            }
+
+            .right-panel-content blockquote {
+                border-left: 4px solid #0e639c;
+                margin: 15px 0;
+                padding-left: 15px;
+                color: #cccccc;
+            }
+
+            .right-panel-content table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 15px;
+            }
+
+            .right-panel-content th,
+            .right-panel-content td {
+                border: 1px solid #3e3e42;
+                padding: 8px 12px;
+                text-align: left;
+            }
+
+            .right-panel-content th {
+                background-color: #2d2d30;
+                color: #ffffff;
+                font-weight: bold;
+            }
+
+            .right-panel-content tr:nth-child(even) {
+                background-color: #2a2d2e;
+            }
+
+            .placeholder-content {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                text-align: center;
+                color: #888;
+                font-size: 16px;
+            }
+
+            .placeholder-content .placeholder-icon {
+                font-size: 48px;
+                margin-bottom: 20px;
+                opacity: 0.6;
+            }
+
+            .placeholder-content .placeholder-text {
+                font-size: 18px;
+                margin-bottom: 10px;
+                color: #ccc;
+            }
+
+            .placeholder-content .placeholder-subtext {
+                font-size: 14px;
+                color: #888;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main-content">
+            <div class="header">
+                <h1>Code Quality Visualization</h1>
+
+                <h3>Quality breakdown</h3>
+                <table class="quality-breakdown-table">
+                    <thead>
+                        <tr>
+                            <th>Quality</th>
+                            <th>Number of Files</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="quality-badge excellent">Excellent</span></td>
+                            <td><div class="summary-value" id="totalExcellent">-</div></td>
+                            <td>Strong adherence to clean code principles</td>
+                        </tr>
+                        <tr>
+                            <td><span class="quality-badge very-good">Very Good</span></td>
+                            <td><div class="summary-value" id="totalVeryGood">-</div></td>
+                            <td>Mostly clean with minor issues</td>
+                        </tr>
+                        <tr>
+                            <td><span class="quality-badge good">Good</span></td>
+                            <td><div class="summary-value" id="totalGood">-</div></td>
+                            <td>Generally aligned with principles</td>
+                        </tr>
+                        <tr>
+                            <td><span class="quality-badge fair">Fair</span></td>
+                            <td><div class="summary-value" id="totalFair">-</div></td>
+                            <td>Some principles applied, major gaps remain</td>
+                        </tr>
+                        <tr>
+                            <td><span class="quality-badge poor">Poor</span></td>
+                            <td><div class="summary-value" id="totalPoor">-</div></td>
+                            <td>Significant rework needed</td>
+                        </tr>
+                        <tr>
+                            <td><span class="quality-badge critical">Critical</span></td>
+                            <td><div class="summary-value" id="totalCritical">-</div></td>
+                            <td>Major issues requiring immediate attention</td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td><strong>Total</strong></td>
+                            <td><div class="summary-value" id="totalFilesSummary">-</div></td>
+                            <td></td>
+                        </tr>
+                        <tr class="summary-row">
+                            <td><strong>Average Quality</strong></td>
+                            <td><span class="quality-badge" id="averageQualityBadge">-</span></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tree-container">
+                <button class="expand-all-btn" onclick="toggleAllFolders()">Expand All Folders</button>
+                <div class="tree"></div>
+            </div>
+        </div>
+
+        <div class="right-panel" id="rightPanel">
+            <div class="right-panel-header">
+                <h3 class="right-panel-title" id="rightPanelTitle">File Analysis</h3>
+            </div>
+            <div class="right-panel-content" id="rightPanelContent">
+                <div class="placeholder-content" id="placeholderContent">
+                    <div class="placeholder-icon">📄</div>
+                    <div class="placeholder-text">Click on a file to see the analysis</div>
+                    <div class="placeholder-subtext">
+                        Select any file from the tree to view its detailed code quality analysis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const report = $REPORT;
+
+            document.addEventListener('DOMContentLoaded', function () {
+                // Populate quality category statistics
+                document.getElementById('totalExcellent').textContent = report.metrics.verdictCounts.Excellent;
+                document.getElementById('totalVeryGood').textContent = report.metrics.verdictCounts['Very Good'];
+                document.getElementById('totalGood').textContent = report.metrics.verdictCounts.Good;
+                document.getElementById('totalFair').textContent = report.metrics.verdictCounts.Fair;
+                document.getElementById('totalPoor').textContent = report.metrics.verdictCounts.Poor;
+                document.getElementById('totalCritical').textContent = report.metrics.verdictCounts.Critical;
+
+                // Populate table summary rows
+                document.getElementById('totalFilesSummary').textContent = report.metrics.fileCount;
+
+                // Set up average quality badge
+                const averageQualityBadge = document.getElementById('averageQualityBadge');
+                const averageVerdict = convertScoreToVerdict(report.metrics.averageScore);
+                averageQualityBadge.textContent = averageVerdict;
+                averageQualityBadge.className = `quality-badge ${getQualityClass(report.metrics.averageScore)}`;
+
+                // Generate tree
+                const treeContainer = document.querySelector('.tree');
+                generateTreeDOM(report, treeContainer);
+            });
+
+            function generateTreeDOM(analysis, container) {
+                if (analysis.type === 'file') {
+                    const fileElement = generateFileElement(analysis);
+                    container.appendChild(fileElement);
+                    return;
+                }
+
+                const folderElement = generateFolderElement(analysis);
+                container.appendChild(folderElement);
+            }
+
+            function generateFolderElement(analysis) {
+                const folderDiv = document.createElement('div');
+                folderDiv.className = 'tree-item folder';
+                folderDiv.addEventListener('click', (event) => toggleFolder(folderDiv, event));
+
+                const qualityClass = getQualityClass(analysis.metrics.averageScore);
+                const qualityBadge = getQualityBadge(analysis.metrics.averageScore);
+
+                folderDiv.innerHTML = `
+                    <span class="folder-icon"></span>
+                    <span class="item-name">${analysis.name}</span>
+                    <span class="quality-badge ${qualityClass}">${qualityBadge}</span>
+                    <span class="folder-stats">(${analysis.metrics.fileCount} files)</span>
+                `;
+
+                const childrenDiv = document.createElement('div');
+                childrenDiv.className = 'children';
+                folderDiv.appendChild(childrenDiv);
+
+                // Sort and add children
+                const sortedChildren = sortChildren(analysis.children);
+                sortedChildren.forEach((child) => {
+                    generateTreeDOM(child, childrenDiv);
+                });
+
+                return folderDiv;
+            }
+
+            function generateFileElement(analysis) {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'tree-item file';
+
+                const qualityClass = getQualityClass(convertVerdictToScore(analysis.verdict));
+                const qualityBadge = getQualityBadge(convertVerdictToScore(analysis.verdict));
+
+                fileDiv.innerHTML = `
+                    <span class="file-icon"></span>
+                    <span class="item-name">${analysis.name}</span>
+                    <span class="quality-badge ${qualityClass}">${qualityBadge}</span>
+                `;
+
+                // Use closure to bind the analysis data to the click handler
+                fileDiv.addEventListener('click', (event) => {
+                    showFileAnalysis(event, analysis.name, analysis.analysis);
+                });
+
+                return fileDiv;
+            }
+
+            function sortChildren(children) {
+                return children.sort((a1, a2) => compareChildren(a1, a2));
+            }
+
+            function compareChildren(a1, a2) {
+                if (a1.type === 'file' && a2.type === 'folder') return 1;
+                if (a1.type === 'folder' && a2.type === 'file') return -1;
+                return a1.name.localeCompare(a2.name);
+            }
+
+            function getQualityClass(score) {
+                return convertScoreToVerdict(score).toLowerCase().replace(' ', '-');
+            }
+
+            function getQualityBadge(score) {
+                return convertScoreToVerdict(score);
+            }
+
+            function toggleFolder(element, event) {
+                event.stopPropagation();
+                const children = element.querySelector('.children');
+                const icon = element.querySelector('.folder-icon');
+
+                if (children) {
+                    children.classList.toggle('expanded');
+                    icon.classList.toggle('expanded');
+                }
+            }
+
+            function toggleAllFolders() {
+                const allFolders = document.querySelectorAll('.tree-item.folder');
+                const allChildren = document.querySelectorAll('.children');
+                const allIcons = document.querySelectorAll('.folder-icon');
+
+                const isExpanded = allChildren[0] && allChildren[0].classList.contains('expanded');
+
+                allChildren.forEach((children) => {
+                    if (isExpanded) {
+                        children.classList.remove('expanded');
+                    } else {
+                        children.classList.add('expanded');
+                    }
+                });
+
+                allIcons.forEach((icon) => {
+                    if (isExpanded) {
+                        icon.classList.remove('expanded');
+                    } else {
+                        icon.classList.add('expanded');
+                    }
+                });
+            }
+
+            function showFileAnalysis(event, fileName, analysisText) {
+                event.stopPropagation();
+                const rightPanelTitle = document.getElementById('rightPanelTitle');
+                const rightPanelContent = document.getElementById('rightPanelContent');
+                const placeholderContent = document.getElementById('placeholderContent');
+
+                // Initialize Showdown converter
+                const converter = new showdown.Converter();
+
+                // Convert markdown to HTML
+                const htmlContent = converter.makeHtml(analysisText);
+
+                // Update panel content
+                rightPanelTitle.textContent = fileName;
+                rightPanelContent.innerHTML = htmlContent;
+
+                // Hide placeholder and show file content
+                placeholderContent.style.display = 'none';
+            }
+
+            function resetRightPanel() {
+                const rightPanelTitle = document.getElementById('rightPanelTitle');
+                const rightPanelContent = document.getElementById('rightPanelContent');
+                const placeholderContent = document.getElementById('placeholderContent');
+
+                // Reset to placeholder state
+                rightPanelTitle.textContent = 'File Analysis';
+                rightPanelContent.innerHTML = `
+                    <div class="placeholder-content" id="placeholderContent">
+                        <div class="placeholder-icon">📄</div>
+                        <div class="placeholder-text">Click on a file to see the analysis</div>
+                        <div class="placeholder-subtext">Select any file from the tree to view its detailed code quality analysis</div>
+                    </div>
+                `;
+            }
+
+            function convertVerdictToScore(verdict) {
+                const VERDICTS = ['Critical', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+                return VERDICTS.indexOf(verdict);
+            }
+            function convertScoreToVerdict(score) {
+                if (score >= 4.5) return 'Excellent';
+                if (score >= 3.5) return 'Very Good';
+                if (score >= 2.5) return 'Good';
+                if (score >= 1.5) return 'Fair';
+                if (score >= 0.5) return 'Poor';
+                return 'Critical';
+            }
+        </script>
+    </body>
+</html>
